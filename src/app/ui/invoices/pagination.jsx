@@ -3,18 +3,32 @@
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { generatePagination } from '@/app/lib/utils';
 
 export default function Pagination({ totalPages }) {
-  // NOTE: comment in this code when you get to this point in the course
+  // Get the current page from URL search params
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams.get('page')) || 1; // Default to page 1 if not found
 
-  // const allPages = generatePagination(currentPage, totalPages);
+  // Ensure totalPages is valid
+  if (totalPages <= 0) {
+    return null; // Optionally render a message here
+  }
+
+  const allPages = generatePagination(currentPage, totalPages); // Generate pagination links
+
+  // Function to create the URL for pagination links
+  const createPageURL = (pageNumber) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', pageNumber.toString());
+    return `${pathname}?${params.toString()}`;
+  };
 
   return (
     <>
-      {/* NOTE: comment in this code when you get to this point in the course */}
-
-      {/* <div className="inline-flex">
+      <div className="inline-flex">
         <PaginationArrow
           direction="left"
           href={createPageURL(currentPage - 1)}
@@ -23,12 +37,12 @@ export default function Pagination({ totalPages }) {
 
         <div className="flex -space-x-px">
           {allPages.map((page, index) => {
-            let position: 'first' | 'last' | 'single' | 'middle' | undefined;
+            let position;
 
             if (index === 0) position = 'first';
-            if (index === allPages.length - 1) position = 'last';
-            if (allPages.length === 1) position = 'single';
-            if (page === '...') position = 'middle';
+            else if (index === allPages.length - 1) position = 'last';
+            else if (allPages.length === 1) position = 'single';
+            else if (page === '...') position = 'middle';
 
             return (
               <PaginationNumber
@@ -47,17 +61,12 @@ export default function Pagination({ totalPages }) {
           href={createPageURL(currentPage + 1)}
           isDisabled={currentPage >= totalPages}
         />
-      </div> */}
+      </div>
     </>
   );
 }
 
-function PaginationNumber({
-  page,
-  href,
-  isActive,
-  position,
-}) {
+function PaginationNumber({ page, href, isActive, position }) {
   const className = clsx(
     'flex h-10 w-10 items-center justify-center text-sm border',
     {
@@ -78,11 +87,7 @@ function PaginationNumber({
   );
 }
 
-function PaginationArrow({
-  href,
-  direction,
-  isDisabled,
-}) {
+function PaginationArrow({ href, direction, isDisabled }) {
   const className = clsx(
     'flex h-10 w-10 items-center justify-center rounded-md border',
     {
